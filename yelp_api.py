@@ -22,7 +22,7 @@ API_HOST = 'https://api.yelp.com'
 SEARCH_PATH = '/v3/businesses/search'
 BUSINESS_PATH = '/v3/businesses/'  # Business ID will come after slash.
 
-SEARCH_LIMIT = 3
+SEARCH_LIMIT = 5
 
 file = open('my_key.txt', 'r')
 api_key = file.read().strip()
@@ -30,6 +30,7 @@ api_key = file.read().strip()
 file.close()
 
 headers = {'Authorization': 'Bearer %s' % api_key}
+
 
 def request(host, path, api_key, url_params=None):
     """Given your API_KEY, send a GET request to the API.
@@ -56,7 +57,8 @@ def request(host, path, api_key, url_params=None):
 
     return response.json()
 
-def search (api_key, term, location, phone, sort_by='best_match'):
+
+def search(api_key, term, location, phone, sort_by='best_match'):
     """Query the Search API by a search term and location.
 
     Args:
@@ -79,18 +81,19 @@ def search (api_key, term, location, phone, sort_by='best_match'):
         location = str(location)
 
     try:
-        phone = '+1'+phone.replace('-','')
+        phone = '+1' + phone.replace('-', '')
     except AttributeError:  # if not str
         phone = str(phone)
 
     url_params = {
-        'term':term,
-        'location':location,
-        'phone':phone,
-        'limit':SEARCH_LIMIT,
-        'sort_by':sort_by
-        }
+        'term': term,
+        'location': location,
+        'phone': phone,
+        'limit': SEARCH_LIMIT,
+        'sort_by': sort_by
+    }
     return request(API_HOST, SEARCH_PATH, api_key, url_params=url_params)
+
 
 def get_business(api_key, business_id):
     """Query the Business API by a business ID.
@@ -105,7 +108,8 @@ def get_business(api_key, business_id):
 
     return request(API_HOST, business_path, api_key)
 
-def get_business_match (api_key, term, location, phone, sort_by='best_match'):
+
+def get_business_match(api_key, term, location, phone, sort_by='best_match'):
     """Queries API for best match among businesses.
 
     Args:
@@ -124,6 +128,11 @@ def get_business_match (api_key, term, location, phone, sort_by='best_match'):
 
     return businesses[0]
 
+
+def get_reviews(arg):
+    pass
+
+
 def query_api(search_term, location, phone):
     """Queries the API by the input values from the user.
 
@@ -131,58 +140,21 @@ def query_api(search_term, location, phone):
         term (str): The search term to query.
         location (str): The location of the business to query.
     """
+    rest_info = None
     try:
-        rest_id = get_business_match(api_key, search_term, location, phone)['id']
+        match = get_business_match(api_key, search_term, location, phone)
+        rest_id = match['id']
         rest_info = get_business(api_key, rest_id)
-        print(rest_info.get('name'))
-        rating = rest_info.get('rating')
-        review_count = rest_info.get('review_count')
-        price = rest_info.get('price')
-        print(review_count)
-        print(rating)
-        print(price)
     except AttributeError:
-        rating = ""
-        review_count = ""
-        price = ""
+        pass
+    except TypeError:
+        pass
     except HTTPError as error:
         sys.exit(
-              'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
-                    error.code,
-                    error.url,
-                    error.read(),
-                    )
-              )
-
-def test(search_term, location, phone):
-    try:
-        business_id = get_business_match(api_key, search_term, location, phone)
-        print('Business id for best match of below params = {0}\n' \
-              'Search Term: {1}\nLocation: {2}\n'.format(
-              business_id, search_term, location))
-        business_info = get_business(api_key, business_id)
-        rating = business_info.get('rating')
-        price = business_info.get('price')
-        print(rating)
-        print(price)
-
-    except HTTPError as error:
-        sys.exit(
-              'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
-                    error.code,
-                    error.url,
-                    error.read(),
-                    )
-              )
-
-# def main():
-#     for i, rest in unique_rest.iloc[70:80].iterrows():
-#       camis = rest['CAMIS']
-#       name = rest['DBA']
-#       print(name)
-#       phone = rest['PHONE']
-#       loc = rest['Location']
-#       query_api(name, loc, phone)
-
-# if __name__ == '__main__':
-    # main()
+            'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
+                error.code,
+                error.url,
+                error.read(),
+            )
+        )
+    return rest_info
