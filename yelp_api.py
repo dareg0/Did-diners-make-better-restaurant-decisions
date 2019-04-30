@@ -129,8 +129,10 @@ def get_business_match(api_key, term, location, phone, sort_by='best_match'):
     return businesses[0]
 
 
-def get_reviews(arg):
-    pass
+def get_reviews(api_key, business_id):
+    reviews = request(API_HOST, BUSINESS_PATH + business_id +
+                      '/reviews', api_key)["reviews"]
+    return reviews
 
 
 def query_api(search_term, location, phone):
@@ -141,10 +143,12 @@ def query_api(search_term, location, phone):
         location (str): The location of the business to query.
     """
     rest_info = None
+    reviews = None
     try:
         match = get_business_match(api_key, search_term, location, phone)
         rest_id = match['id']
         rest_info = get_business(api_key, rest_id)
+        reviews = get_reviews(api_key, rest_id)
     except AttributeError:
         pass
     except TypeError:
@@ -157,4 +161,4 @@ def query_api(search_term, location, phone):
                 error.read(),
             )
         )
-    return rest_info
+    return rest_info, reviews
