@@ -22,7 +22,7 @@ API_HOST = 'https://api.yelp.com'
 SEARCH_PATH = '/v3/businesses/search'
 BUSINESS_PATH = '/v3/businesses/'  # Business ID will come after slash.
 
-SEARCH_LIMIT = 5
+SEARCH_LIMIT = 3
 
 file = open('my_key.txt', 'r')
 api_key = file.read().strip()
@@ -130,8 +130,13 @@ def get_business_match(api_key, term, location, phone, sort_by='best_match'):
 
 
 def get_reviews(api_key, business_id):
-    reviews = request(API_HOST, BUSINESS_PATH + business_id +
-                      '/reviews', api_key)["reviews"]
+    try:
+        reviews = request(API_HOST, BUSINESS_PATH + business_id +
+                          '/reviews', api_key)["reviews"]
+    except AttributeError:
+        pass
+    except TypeError:
+        pass
     return reviews
 
 
